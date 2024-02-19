@@ -32,12 +32,12 @@ class Customer(BASE):
     age = Column(Integer())
 
     #many to many relationship: (class to relate to, join table, virtual table to relate to drinks)
-    drinks = relationship("Drinks", secondary=customer_drinks, back_populates="virtual_customers") 
+    drinks = relationship("Drink", secondary=customer_drinks, back_populates="customers") 
     #One to many relationship; (class to relate to, virtual column, delete chirld when parent deleted)
     reviews = relationship("Review", backref="virtual_customer", cascade=("all, delete"))
 
 
-class Drinks(BASE):
+class Drink(BASE):
     
     __tablename__ = "drinks"
 
@@ -46,11 +46,11 @@ class Drinks(BASE):
     price = Column(String())
     alcohol_content = Column(Integer())
 
-    customers = relationship("Customer", secondary=customer_drinks, back_populates="virtual_drinks")
-    review = relationship("Reviews", backref="virtualdrinks", cascade=("all, delete"))
+    customers = relationship("Customer", secondary=customer_drinks, back_populates="drinks")
+    review = relationship("Review", backref="virtual_drinks", cascade=("all, delete"))
 
 
-class Reviews(BASE):
+class Review(BASE):
     
     __tablename__ = "reviews"
 
