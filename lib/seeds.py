@@ -1,6 +1,7 @@
 from faker import Faker
 from sqlalchemy.orm import sessionmaker
 from models import engine, BASE, Customer, Drink, Review, customer_drinks
+import ipdb
 
 # Create an instance of Faker
 fake = Faker()
@@ -74,6 +75,13 @@ def associate_customers_and_drinks():
             customer.drinks.append(drink)
     session.commit()
 
+customer1 = session.get(Customer, 1)    
+customer2 = session.get(Customer, 2)
+customer3 = session.get(Customer, 3)
+drink1 = session.get(Drink, 1)
+drink2 = session.get(Drink, 2)
+drink3 = session.get(Drink, 3)
+ipdb.set_trace()
 
 if __name__ == "__main__":
     BASE.metadata.create_all(engine)  # Create tables if they don't exist
@@ -81,3 +89,5 @@ if __name__ == "__main__":
     create_drinks()
     create_reviews()
     associate_customers_and_drinks()
+
+    
