@@ -37,43 +37,7 @@ class Customer(BASE):
     #many to many relationship: (class to relate to, join table, virtual table to relate to drinks)
     drinks = relationship("Drink", secondary=customer_drinks, back_populates="customers") 
     #One to many relationship; (class to relate to, virtual column, delete chirld when parent deleted)
-    reviews = relationship("Review", backref="virtual_customer", cascade=("all, delete"))
-
-    #Find customer favourite beer
-    def favaorite_drink(self):
-        customer_reviews = self.reviews
-        sorted_reviews = sorted(customer_reviews, key= lambda review: review.rating)
-        print(sorted_reviews)
-        print(sorted_reviews[-1])
-        return sorted_reviews[-1]
-
-
-    #customer should add a review
-    def customer_new_review(self, drink, rating, comment):
-         
-        customer_identity = session.query(Customer).filter_by(first_name=self.first_name).first()
-        if customer_identity is None:
-            print("Customer not found.")
-            return False
-
-        # Create and add the review
-        customer_review = Review(
-            drinks_id=drink.id,
-            customer_id=customer_identity.id,
-            rating=rating,
-            comment=comment
-        )
-        session.add(customer_review)
-        session.commit()
-        return True
-
-
-
-
-    #find favourite drink
-
-
-    #customer should delete a review
+    reviews = relationship("Review", backref="virtual_drink", cascade=("all, delete"))
 
 
 class Drink(BASE):
@@ -84,13 +48,11 @@ class Drink(BASE):
     name = Column(String())
     price = Column(String())
     alcohol_content = Column(Integer())
+    stars = Column(Integer())
 
     customers = relationship("Customer", secondary=customer_drinks, back_populates="drinks")
-    review = relationship("Review", backref="virtual_drinks", cascade=("all, delete"))
+    review = relationship("Review", backref="virtual_customer", cascade=("all, delete"))
 
-    #find best rated drink
-
-    #find all reviews
 
 class Review(BASE):
     
@@ -103,7 +65,6 @@ class Review(BASE):
     rating = Column(Integer(), nullable=False)
 
 
-   # give a full review
 
 
 

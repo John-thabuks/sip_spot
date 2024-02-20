@@ -1,7 +1,7 @@
+import random
 from faker import Faker
 from sqlalchemy.orm import sessionmaker
 from models import engine, BASE, Customer, Drink, Review, customer_drinks
-import ipdb
 
 # Create an instance of Faker
 fake = Faker()
@@ -12,7 +12,7 @@ session = Session()
 
 def create_customers():
     # Generate and insert fake customer data into the customers table
-    for _ in range(50):  # Generate 10 customers
+    for _ in range(50):  # Generate 50 customers
         customer = Customer(
             first_name=fake.unique.first_name(),
             last_name=fake.unique.last_name(),
@@ -23,11 +23,12 @@ def create_customers():
 
 def create_drinks():
     # Generate and insert fake drink data into the drinks table
-    for _ in range(10):  # Generate 5 drinks
+    for _ in range(10):  # Generate 10 drinks
         drink = Drink(
             name=fake.word(),
             price=fake.random_number(digits=3),
-            alcohol_content=fake.random_int(min=10, max=45)
+            alcohol_content=fake.random_int(min=10, max=45),
+            stars=random.randint(1, 5)  # Generate random value for stars
         )
         session.add(drink)
     session.commit()
@@ -48,21 +49,22 @@ def create_reviews():
             session.add(review)
     session.commit()
 
+# def associate_customers_and_drinks():
+#     # Associate customers with drinks in the customer_drinks table
+#     customers = session.query(Customer).all()
+#     drinks = session.query(Drink).all()
+
+#     for customer in customers:
+#         # Assign a random number of drinks to each customer
+#         num_drinks = fake.random_int(min=1, max=10)
+#         # Shuffle the list of drinks
+#         random.shuffle(drinks)
+#         for drink in drinks[:num_drinks]:
+#             customer.drinks.append(drink)
+#     session.commit()
+    
 def associate_customers_and_drinks():
-    # Associate customers with drinks in the customer_drinks table
-    customers = session.query(Customer).all()
-    drinks = session.query(Drink).all()
-
-    # for customer in customers:
-    #     # Assign a random number of drinks to each customer
-    #     num_drinks = fake.random_int(min=1, max=10)
-    #     for _ in range(num_drinks):
-    #         drink = fake.random_element(drinks)
-    #         customer.drinks.append(drink)
-    # session.commit()
-
-
-    # Retrieve all customers and drinks
+# Associate customers with drinks in the customer_drinks table
     customers = session.query(Customer).all()
     drinks = session.query(Drink).all()
 
@@ -70,18 +72,13 @@ def associate_customers_and_drinks():
         # Assign a random number of drinks to each customer
         num_drinks = fake.random_int(min=1, max=10)
         # Shuffle the list of drinks
-        fake.random.shuffle(drinks)
+        random.shuffle(drinks)
         for drink in drinks[:num_drinks]:
-            customer.drinks.append(drink)
+            # Check if the drink is already associated with the customer
+            if drink not in customer.drinks:
+                customer.drinks.append(drink)
     session.commit()
 
-customer1 = session.get(Customer, 1)    
-customer2 = session.get(Customer, 2)
-customer3 = session.get(Customer, 3)
-drink1 = session.get(Drink, 1)
-drink2 = session.get(Drink, 2)
-drink3 = session.get(Drink, 3)
-ipdb.set_trace()
 
 if __name__ == "__main__":
     BASE.metadata.create_all(engine)  # Create tables if they don't exist
@@ -89,5 +86,3 @@ if __name__ == "__main__":
     create_drinks()
     create_reviews()
     associate_customers_and_drinks()
-
-    
