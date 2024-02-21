@@ -1,3 +1,4 @@
+
 import os
 import sys
 from sqlalchemy.orm import sessionmaker
@@ -7,7 +8,13 @@ from models import Customer, Drink, Review, engine
 
 sys.path.append(os.getcwd())
 
-# CLI functionality
+# Data validation dictionary for error messages or codes
+error_messages = {
+    "invalid_input": "Invalid input. Please enter a valid value.",
+    "invalid_integer": "Invalid input. Please enter an integer value.",
+    "under_age": "You are underage!! Go home, underage!"
+}
+
 def view_customers(session):
     customers = session.query(Customer).all()
     customer_data = [[customer.id, customer.first_name, customer.last_name, customer.age] for customer in customers]
@@ -64,26 +71,11 @@ def view_reviews(session, customer_id):
     else:
         print(f"{Fore.RED}Customer not found.{Style.RESET_ALL}")
 
-# def add_review(session, customer_id, drink_id, rating, comment):
-#     customer = session.query(Customer).filter(Customer.id == customer_id).first()
-#     if customer:
-#         drink = session.query(Drink).filter(Drink.id == drink_id).first()
-#         if drink:
-#             review = Review(customer_id=customer_id, drink_id=drink_id, rating=rating, comment=comment)
-#             session.add(review)
-#             session.commit()
-#             print(f"{Fore.GREEN}Review added successfully.{Style.RESET_ALL}")
-#         else:
-#             print(f"{Fore.RED}Drink not found.{Style.RESET_ALL}")
-#     else:
-#         print(f"{Fore.RED}Customer not found.{Style.RESET_ALL}")
-
 def add_review(session, customer_id, drink_id, rating, comment):
     customer = session.query(Customer).filter(Customer.id == customer_id).first()
     if customer:
         drink = session.query(Drink).filter(Drink.id == drink_id).first()
         if drink:
-            # Create the review using the correct attribute names
             review = Review(customer_id=customer_id, drinks_id=drink_id, rating=rating, comment=comment)
             session.add(review)
             session.commit()
@@ -93,34 +85,25 @@ def add_review(session, customer_id, drink_id, rating, comment):
     else:
         print(f"{Fore.RED}Customer not found.{Style.RESET_ALL}")
 
-
-
-# def view_drinks(session):
-#     drinks = session.query(Drink).all()
-#     for drink in drinks:
-#         print(f"{Fore.BLUE}Drink: {drink.name}, Price: {drink.price}, Alcohol Content: {drink.alcohol_content}%{Style.RESET_ALL}")
-#         if drink.review:  # Use 'review' instead of 'reviews'
-#             print(f"{Fore.GREEN}Reviews:{Style.RESET_ALL}")
-#             for review in drink.review:  # Use 'review' instead of 'reviews'
-#                 customer = session.query(Customer).filter(Customer.id == review.customer_id).first()
-#                 print(f"   - Customer: {customer.first_name} {customer.last_name}, Rating: {review.rating}, Comment: {review.comment}")
-#         else:
-#             print(f"{Fore.YELLOW}No reviews available for this drink.{Style.RESET_ALL}")
-        
 def view_drinks(session):
-    drinks = session.query(Drink).limit(20).all()  # Limit the results to 20 drinks
+    drinks = session.query(Drink).limit(20).all()
     for drink in drinks:
         print(f"{Fore.BLUE}Drink: {drink.name}, Price: {drink.price}, Alcohol Content: {drink.alcohol_content}%{Style.RESET_ALL}")
         if drink.review:
             print(f"{Fore.GREEN}Reviews:{Style.RESET_ALL}")
-            # Limit the number of reviews displayed to 5
             for review in drink.review[:5]:
                 customer = session.query(Customer).filter(Customer.id == review.customer_id).first()
                 print(f"   - Customer: {customer.first_name} {customer.last_name}, Rating: {review.rating}, Comment: {review.comment}")
         else:
             print(f"{Fore.YELLOW}No reviews available for this drink.{Style.RESET_ALL}")
 
-
+def get_valid_integer_input(prompt):
+    while True:
+        try:
+            user_input = int(input(prompt))
+            return user_input
+        except ValueError:
+            print(error_messages["invalid_integer"])
 
 def main():
     Session = sessionmaker(bind=engine)
@@ -136,7 +119,7 @@ def main():
         print("4. Delete Customer")
         print("5. Create Drink")
         print("6. Delete Drink")
-        print("7. View Drinks")  # Updated option
+        print("7. View Drinks")
         print("8. Add Review")
         print("9. Exit")
         choice = input(f"{Fore.YELLOW}Enter your choice: {Style.RESET_ALL}")
@@ -144,30 +127,32 @@ def main():
         if choice == '1':
             view_customers(session)
         elif choice == '2':
-            customer_id = int(input(f"{Fore.YELLOW}Enter the customer ID: {Style.RESET_ALL}"))
+            customer_id = get_valid_integer_input(f"{Fore.YELLOW}Enter the customer ID: {Style.RESET_ALL}")
             view_customer_details(session, customer_id)
         elif choice == '3':
             first_name = input(f"{Fore.YELLOW}Enter first name: {Style.RESET_ALL}")
             last_name = input(f"{Fore.YELLOW}Enter last name: {Style.RESET_ALL}")
-            age = int(input(f"{Fore.YELLOW}Enter age: {Style.RESET_ALL}"))
+            age = get_valid_integer_input(f"{Fore.YELLOW}Enter age: {Style.RESET_ALL}")
             create_customer(session, first_name, last_name, age)
         elif choice == '4':
-            customer_id = int(input(f"{Fore.YELLOW}Enter customer ID to delete: {Style.RESET_ALL}"))
+            customer_id = get_valid_integer_input(f"{Fore.YELLOW}Enter customer ID to delete: {Style.RESET_ALL}")
+            delete_customer(session, customer_id)
+            get_valid_integer_input(f"{Fore.YELLOW}Enter customer ID to delete: {Style.RESET_ALL}")
             delete_customer(session, customer_id)
         elif choice == '5':
             name = input(f"{Fore.YELLOW}Enter drink name: {Style.RESET_ALL}")
             price = input(f"{Fore.YELLOW}Enter drink price: {Style.RESET_ALL}")
-            alcohol_content = int(input(f"{Fore.YELLOW}Enter alcohol content: {Style.RESET_ALL}"))
+            alcohol_content = get_valid_integer_input(f"{Fore.YELLOW}Enter alcohol content: {Style.RESET_ALL}")
             create_drink(session, name, price, alcohol_content)
         elif choice == '6':
-            drink_id = int(input(f"{Fore.YELLOW}Enter drink ID to delete: {Style.RESET_ALL}"))
+            drink_id = get_valid_integer_input(f"{Fore.YELLOW}Enter drink ID to delete: {Style.RESET_ALL}")
             delete_drink(session, drink_id)
         elif choice == '7':
-            view_drinks(session)  # Updated function call
+            view_drinks(session)
         elif choice == '8':
-            customer_id = int(input(f"{Fore.YELLOW}Enter your customer ID: {Style.RESET_ALL}"))
-            drink_id = int(input(f"{Fore.YELLOW}Enter the drink ID: {Style.RESET_ALL}"))
-            rating = int(input(f"{Fore.YELLOW}Enter your rating (1-10): {Style.RESET_ALL}"))
+            customer_id = get_valid_integer_input(f"{Fore.YELLOW}Enter your customer ID: {Style.RESET_ALL}")
+            drink_id = get_valid_integer_input(f"{Fore.YELLOW}Enter the drink ID: {Style.RESET_ALL}")
+            rating = get_valid_integer_input(f"{Fore.YELLOW}Enter your rating (1-10): {Style.RESET_ALL}")
             comment = input(f"{Fore.YELLOW}Enter your comment: {Style.RESET_ALL}")
             add_review(session, customer_id, drink_id, rating, comment)
         elif choice == '9':
@@ -178,3 +163,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+        

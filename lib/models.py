@@ -1,7 +1,7 @@
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, String, Integer, Table, create_engine, ForeignKey
 from sqlalchemy.orm import relationship,sessionmaker
-from faker import Faker
+# from faker import Faker
 
 
 
